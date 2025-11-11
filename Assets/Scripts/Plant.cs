@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Plant : MonoBehaviour
 {
-    [SerializeField] List<GameObject> PlantPrefabs = new List<GameObject>();
+    [SerializeField] GameObject PlantPrefab;
     void Start()
     {
         
