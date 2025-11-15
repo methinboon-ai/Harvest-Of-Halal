@@ -8,7 +8,7 @@ public abstract class Plant : MonoBehaviour
     [SerializeField] List<Mesh> PlantMeshStages;
     [SerializeField] float MaxStageUnit;
     MeshFilter meshFilter;
-    public bool FullGrowth {  get; private set; }
+    public bool Harvestable {  get; private set; }
     float currentStage = 0;
     
     void Start()
@@ -21,7 +21,7 @@ public abstract class Plant : MonoBehaviour
     {
         
     }
-    public virtual void Grow()
+    public void Grow()
     {
         currentStage = Mathf.Clamp(currentStage + 1, 0, MaxStageUnit);
 
@@ -46,4 +46,6 @@ public abstract class Plant : MonoBehaviour
 
         Debug.Log($"Current Stage: {currentStage}, Progress: {progress:P0}, Index: {targetIndex}");
     }
+
+    public virtual void Harvest() { }
 }
