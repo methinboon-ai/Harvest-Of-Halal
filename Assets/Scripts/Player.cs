@@ -7,7 +7,6 @@ public class Player : MonoBehaviour
     [SerializeField] Canvas PlayerUI;
     TMP_Text InteractText;
     TMP_Text SelectText;
-
     void Start()
     {
         InteractText = PlayerUI.transform.Find("InteractText").GetComponent<TMP_Text>();
