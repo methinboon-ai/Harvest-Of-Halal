@@ -6,10 +6,11 @@ using UnityEngine;
 public abstract class Plant : MonoBehaviour
 {
     [SerializeField] List<Mesh> PlantMeshStages;
-    [SerializeField] float MaxStageUnit;
+    [SerializeField] public float MaxStageUnit { get; private set; }
+    [SerializeField] GameObject Planter;
     MeshFilter meshFilter;
     public bool Harvestable {  get; private set; }
-    float currentStage = 0;
+    public float currentStage { get; private set; } = 0;
     
     
 
@@ -43,8 +44,10 @@ public abstract class Plant : MonoBehaviour
     }
 
 
-    public virtual void Harvesting(Player Player)
+    public void Harvesting(Player Player)
     {
-        
+        GameObject newPlanter = Instantiate(Planter,transform.parent);
+        newPlanter.transform.parent = transform;
+        Destroy(this.gameObject);
     }
 }

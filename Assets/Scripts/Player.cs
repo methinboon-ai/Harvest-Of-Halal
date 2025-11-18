@@ -2,11 +2,21 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public interface IInteractable
 {
+    void Planting(Planter planter, GameObject plantPrefab);
+    void Harvesting(Plant plant);
+}
+
+public class Player : MonoBehaviour, IInteractable
+{
+    [SerializeField] List<GameObject> PlantPrefabs;
     [SerializeField] Canvas PlayerUI;
     TMP_Text InteractText;
     TMP_Text SelectText;
+
+    
+
     void Start()
     {
         InteractText = PlayerUI.transform.Find("InteractText").GetComponent<TMP_Text>();
@@ -25,10 +35,8 @@ public class Player : MonoBehaviour
             // If the ray hits an object, get its Transform
             Transform targetTransform = hit.transform;
 
-            if (targetTransform.name == "Planter")
-            {
-                return targetTransform;
-            }
+            if (targetTransform != null) return targetTransform;
+                
             return null;
         }
         else
@@ -41,11 +49,24 @@ public class Player : MonoBehaviour
     {
         Transform target = FindMouseTarget();
         if (target != null) {
-            InteractText.gameObject.SetActive(true);
-            if (target.name == "Planter")
+            Planter planter = target.GetComponent<Planter>();
+            Plant plant = target.GetComponent<Plant>();
+            if (plant != null)
             {
-                SelectText.gameObject.SetActive(true);
+                InteractText.gameObject.SetActive(true);
+                if (plant.currentStage >= plant.MaxStageUnit)
+                {
+                    InteractText.text = "(F) Harvest";
+                    return;
+                }
             }
+            if (planter != null)
+            {
+                InteractText.gameObject.SetActive(true);
+                InteractText.text = "(F) Plant";
+                return;
+            }
+            InteractText.gameObject.SetActive(false);
         }
         else
         {
@@ -59,8 +80,35 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             Transform target = FindMouseTarget();
-            Debug.Log(target);
+            Planter planter = target.GetComponent<Planter>();
+            Plant plant = target.GetComponent<Plant>();
+            if (plant != null)
+            {
+                
+                if (plant.currentStage >= plant.MaxStageUnit)
+                {
+                    // Harvest
+                    Harvesting(plant);
+                    return;
+                }
+            }
+            if (planter != null)
+            {
+                // Plant
+                //Planting(planter);
+                return;
+            }
         }
         DisplayMouseTarget();
+    }
+
+    public void Planting(Planter planter, GameObject plantPrefab)
+    {
+        planter.Planting(plantPrefab);
+    }
+
+    public void Harvesting(Plant plant)
+    {
+        plant.Harvesting(this);
     }
 }

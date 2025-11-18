@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Planter : Plant
+public class Planter : MonoBehaviour
 {
-    List<GameObject> PlantPrefabs;
+    
 
-    public virtual void Planting()
+    public virtual void Planting(GameObject plantPrefab)
     {
-        GameObject plantingPlant;
-        foreach (var plant in PlantPrefabs)
+        GameObject plantingPlant = Instantiate(plantPrefab,transform.parent);
+        plantingPlant.transform.position = transform.position;
+        Destroy(gameObject);
     }
 }
