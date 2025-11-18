@@ -8,6 +8,12 @@ public interface IInteractable
     void Harvesting(Plant plant);
 }
 
+public class InventoryItem
+{
+    public string ItemName;
+    public int Amount;
+}
+
 public class Player : MonoBehaviour, IInteractable
 {
     [SerializeField] List<GameObject> PlantPrefabs;
