@@ -3,29 +3,9 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-public interface IInteractable
-{
-    void Planting(Planter planter, GameObject plantPrefab);
-    void Harvesting(Plant plant);
-    void ItemPickUp(Item item);
-}
 
-public class InventoryItem
-{
-    public string ItemName;
-    public int Amount;
 
-    public bool isUnavailable()
-    {
-        if (Amount <= 0)
-        {
-            return false;
-        }
-        return true;
-    }
-}
-
-public class Player : MonoBehaviour, IInteractable
+public class Player : MonoBehaviour
 {
     [SerializeField] List<GameObject> PlantPrefabs;
     [SerializeField] Canvas PlayerUI;
@@ -35,33 +15,47 @@ public class Player : MonoBehaviour, IInteractable
 
     // Inventory System
     List<InventoryItem> Inventorylist = new List<InventoryItem>();
-    public void AddItem(string itemName, int amountToAdd)
+    void AddItem(InventoryItem _newitem, int amountToAdd)
     {
         // 1. ค้นหาไอเท็มใน List ด้วยชื่อ
         InventoryItem existingItem = Inventorylist
-            .FirstOrDefault(item => item.ItemName == itemName);
+            .FirstOrDefault(item => item.ItemName == _newitem.ItemName);
 
         // 2. ตรวจสอบผลการค้นหา
         if (existingItem != null)
         {
             // ถ้าเจอไอเท็มเดิม: ให้เพิ่มจำนวน (Amount) เข้าไป
-            existingItem.Amount += amountToAdd;
-            Debug.Log($"Added {amountToAdd} x {itemName}. New total: {existingItem.Amount}");
+            existingItem.Add(amountToAdd);
+            Debug.Log($"Added {amountToAdd} x {existingItem.ItemName}. New total: {existingItem.Amount}");
         }
         else
         {
             // ถ้าไม่เจอไอเท็มเดิม: ให้สร้าง InventoryItem ใหม่แล้วเพิ่มเข้า List
-            InventoryItem newItem = new InventoryItem
-            {
-                ItemName = itemName,
-                Amount = amountToAdd
-            };
+            InventoryItem newItem = _newitem;
             Inventorylist.Add(newItem);
-            Debug.Log($"New item added: {amountToAdd} x {itemName}");
+            newItem.Add(amountToAdd);
+            Debug.Log($"New item added: {amountToAdd} x {newItem.ItemName}");
+        }
+    }
+    void RemoveItem(InventoryItem _item, int amountToRemove) {
+        InventoryItem existingItem = Inventorylist
+            .FirstOrDefault(item => item == _item);
+        if (existingItem != null)
+        {
+            existingItem.Remove(amountToRemove);
+            if (existingItem.Amount <= 0)
+            {
+                Inventorylist.Remove(existingItem);
+            }
         }
     }
     void DisplayItem()
     {
+        if (Inventorylist.Count <= 0)
+        {
+            SelectText.gameObject.SetActive(false);
+            return;
+        }
         SelectText.gameObject.SetActive( true );
         SelectText.text = $"(Q/E) {selectingItem.ItemName} x{selectingItem.Amount}";
     }
@@ -130,13 +124,13 @@ public class Player : MonoBehaviour, IInteractable
             if (plant != null)
             {
                 InteractText.gameObject.SetActive(true);
-                if (plant.currentStage >= plant.MaxStageUnit)
+                if (plant.Harvestable == true)
                 {
                     InteractText.text = "(F) Harvest";
                     return;
                 }
             }
-            if (planter != null)
+            if (planter != null && selectingItem is IPlantable plantable)
             {
                 InteractText.gameObject.SetActive(true);
                 InteractText.text = "(F) Plant";
@@ -157,30 +151,7 @@ public class Player : MonoBehaviour, IInteractable
 
     void Update()
     {
-        // Check if the left mouse button is clicked
-        if (Input.GetMouseButtonDown(0))
-        {
-            Transform target = FindMouseTarget();
-            Planter planter = target.GetComponent<Planter>();
-            Plant plant = target.GetComponent<Plant>();
-            Item item = target.GetComponent <Item>();
-            if (plant != null)
-            {
-                
-                if (plant.currentStage >= plant.MaxStageUnit)
-                {
-                    // Harvest
-                    Harvesting(plant);
-                    return;
-                }
-            }
-            if (planter != null)
-            {
-                // Plant
-                //Planting(planter);
-                return;
-            }
-        }
+        DisplayMouseTarget(); // Display Target On Screen
         // Switch Inventory Trigger
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -190,21 +161,26 @@ public class Player : MonoBehaviour, IInteractable
         {
             SwitchItem("Right");
         }
+        // Interact
         if (Input.GetKeyDown(KeyCode.F))
         {
             Transform target = FindMouseTarget();
             Item item = target.GetComponent<Item>();
-            if (item != null)
-            {
-                ItemPickUp(item);
-            }
+            if (item != null) ItemPickUp(item);
+            Planter planter = target.GetComponent<Planter>();
+            if (planter != null) Planting(planter);
+            Plant plant = target.GetComponent<Plant>();
+            if (plant != null && plant.Harvestable == true) Harvesting(plant);
         }
-        DisplayMouseTarget();
     }
-
-    public void Planting(Planter planter, GameObject plantPrefab)
+    // Functions
+    public void Planting(Planter planter)
     {
-        planter.Planting(plantPrefab);
+        if (selectingItem is IPlantable plantable)
+        {
+            planter.Planting(plantable.GetPlantPrefab());
+        }
+        
     }
 
     public void Harvesting(Plant plant)
@@ -214,11 +190,14 @@ public class Player : MonoBehaviour, IInteractable
 
     public void ItemPickUp(Item item)
     {
-        AddItem(item.ItemName, 1);
+        InventoryItem _item = item.InventoryItem;
+        Debug.Log(_item.ItemName);
+        AddItem(_item, 1);
         item.PickUp(this);
         if (selectingItem == null)
         {
             SwitchItem(null);
         }
+        DisplayItem();
     }
 }
