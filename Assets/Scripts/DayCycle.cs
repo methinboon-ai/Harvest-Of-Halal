@@ -10,7 +10,7 @@ public class DayCycle : MonoBehaviour
     [Range(0, 1)]
     public float currentTimeOfDay = 0f; // Current time (0=midnight, 0.5=noon, 1=midnight)
 
-    private float timeMultiplier = 1f;
+    private float timeMultiplier = 100f;
     private float sunInitialIntensity;
     private PlantHandler plantHandler;
     private bool grew = false;
@@ -48,7 +48,7 @@ public class DayCycle : MonoBehaviour
     {
         if (grew == false && currentTimeOfDay >= PlantGrowPoint)
         {
-            Debug.Log("Grow");
+            //Debug.Log("Grow");
             grew = true;
             plantHandler.GrowAll();
         }

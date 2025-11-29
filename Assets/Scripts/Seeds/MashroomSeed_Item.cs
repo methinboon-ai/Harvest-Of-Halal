@@ -1,5 +1,5 @@
 using UnityEngine;
-public class BroccoliSeed_Item : Item
+public class MashroomSeed_Item : Item
 {
     Seed_Class _item = new Seed_Class();
     public override InventoryItem InventoryItem => _item;

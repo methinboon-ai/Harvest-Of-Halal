@@ -15,7 +15,7 @@ public abstract class InventoryItem
     public void SetName (string Name) => ItemName = Name ?? string.Empty;
 }
 
-public class BroccoliSeed_Class : InventoryItem, IPlantable
+public class Seed_Class : InventoryItem, IPlantable
 {
     public GameObject PlantPrefab; // Put string of Plant Prefab
 
@@ -25,3 +25,4 @@ public class BroccoliSeed_Class : InventoryItem, IPlantable
     }
 }
 
+public class Crop_Class : InventoryItem { }

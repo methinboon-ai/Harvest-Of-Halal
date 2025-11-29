@@ -1,12 +1,13 @@
+using NUnit.Framework.Constraints;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 
-public abstract class Plant : MonoBehaviour
+public class Plant : MonoBehaviour
 {
     [SerializeField] List<Mesh> PlantMeshStages;
-    [SerializeField] public float MaxStageUnit { get; private set; }
+    [SerializeField] float MaxStageUnit;
     [SerializeField] GameObject Planter;
     MeshFilter meshFilter;
     public bool Harvestable {  get; private set; }
@@ -40,14 +41,25 @@ public abstract class Plant : MonoBehaviour
         Mesh mesh = PlantMeshStages[targetIndex];
         meshFilter.mesh = mesh;
 
-        Debug.Log($"Current Stage: {currentStage}, Progress: {progress:P0}, Index: {targetIndex}");
+        if (progress >= 100 || currentStage >= MaxStageUnit)
+        {
+            Harvestable = true;
+        }
+
+        //Debug.Log($"{transform.name}: {currentStage}, Progress: {progress:P0}, Index: {targetIndex}");
     }
 
 
     public void Harvesting(Player Player)
     {
-        GameObject newPlanter = Instantiate(Planter,transform.parent);
-        newPlanter.transform.parent = transform;
-        Destroy(this.gameObject);
+        string plant_name = transform.name;
+        Vector3 Pos = transform.position;
+        Transform Garden = GameObject.Find("Plants").transform;
+        GameObject newPlanter = Instantiate(Planter,Garden);
+        newPlanter.transform.position = Pos;
+        Crop_Class newCrop = new Crop_Class();
+        newCrop.SetName(plant_name);
+        Player.ItemPickUp(newCrop);
+        Destroy(gameObject);
     }
 }

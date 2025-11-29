@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
 using UnityEngine;
 
@@ -46,6 +47,12 @@ public class Player : MonoBehaviour
             if (existingItem.Amount <= 0)
             {
                 Inventorylist.Remove(existingItem);
+                selectingItem = null;
+                SwitchItem(null);
+            }
+            else
+            {
+                DisplayItem();
             }
         }
     }
@@ -61,26 +68,44 @@ public class Player : MonoBehaviour
     }
     void SwitchItem(string switchType)
     {
-        if (Inventorylist.Count <= 0) return;
+        // 1. ตรวจสอบลิสต์ว่างเปล่า
+        if (Inventorylist.Count <= 0)
+        {
+            DisplayItem();
+            return;
+        }
+
+        // 2. ตรวจสอบ/กำหนดค่าเริ่มต้น
         if (selectingItem == null || switchType == null)
         {
             selectingItem = Inventorylist.First();
+            DisplayItem(); // แสดงผลไอเท็มแรกทันที
+            return; // ออกจากฟังก์ชันเมื่อกำหนดค่าเริ่มต้นแล้ว
         }
+
+        // 3. หาสถานะปัจจุบัน
+        int currentIndexItem = Inventorylist.IndexOf(selectingItem);
+
         if (switchType == "Left")
         {
-            int currentIndexItem = Inventorylist.IndexOf(selectingItem);
-            if (currentIndexItem - 1 <= -1) {
-                selectingItem = Inventorylist[Inventorylist.Count - 1];
-            }
+            // คำนวณ Index ใหม่สำหรับ "Left" (ก่อนหน้า)
+            // ใช้ Modulo (%) เพื่อวนกลับ: (Index - 1 + Count) % Count
+            int newIndexItem = (currentIndexItem - 1 + Inventorylist.Count) % Inventorylist.Count;
+
+            // กำหนดไอเท็มใหม่
+            selectingItem = Inventorylist[newIndexItem];
         }
-        if (switchType == "Right")
+        else if (switchType == "Right") // ใช้ else if เพื่อประหยัดเวลาประมวลผล
         {
-            int currentIndexItem = Inventorylist.IndexOf(selectingItem);
-            if (currentIndexItem + 1 >= Inventorylist.Count)
-            {
-                selectingItem = Inventorylist[0];
-            }
+            // คำนวณ Index ใหม่สำหรับ "Right" (ถัดไป)
+            // ใช้ Modulo (%) เพื่อวนกลับ: (Index + 1) % Count
+            int newIndexItem = (currentIndexItem + 1) % Inventorylist.Count;
+
+            // กำหนดไอเท็มใหม่
+            selectingItem = Inventorylist[newIndexItem];
         }
+
+        // 4. แสดงผลไอเท็มที่ถูกเลือกใหม่
         DisplayItem();
     }
 
@@ -123,9 +148,10 @@ public class Player : MonoBehaviour
             //Debug.Log(target);
             if (plant != null)
             {
-                InteractText.gameObject.SetActive(true);
+                //Debug.Log($"{plant.name} Harvestable : {plant.Harvestable}");
                 if (plant.Harvestable == true)
                 {
+                    InteractText.gameObject.SetActive(true);
                     InteractText.text = "(F) Harvest";
                     return;
                 }
@@ -178,6 +204,11 @@ public class Player : MonoBehaviour
     {
         if (selectingItem is IPlantable plantable)
         {
+            if (selectingItem.Amount <= 0)
+            {
+                return;
+            }
+            RemoveItem(selectingItem, 1);
             planter.Planting(plantable.GetPlantPrefab());
         }
         
@@ -194,6 +225,15 @@ public class Player : MonoBehaviour
         Debug.Log(_item.ItemName);
         AddItem(_item, 1);
         item.PickUp(this);
+        if (selectingItem == null)
+        {
+            SwitchItem(null);
+        }
+        DisplayItem();
+    }
+    public void ItemPickUp(InventoryItem _inventoryItem)
+    {
+        AddItem(_inventoryItem, 1);
         if (selectingItem == null)
         {
             SwitchItem(null);
