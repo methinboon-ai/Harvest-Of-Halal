@@ -10,7 +10,7 @@ public class DayCycle : MonoBehaviour
     [Range(0, 1)]
     public float currentTimeOfDay = 0f; // Current time (0=midnight, 0.5=noon, 1=midnight)
 
-    private float timeMultiplier = 100f;
+    private float timeMultiplier = 25f;
     private float sunInitialIntensity;
     private PlantHandler plantHandler;
     private bool grew = false;
