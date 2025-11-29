@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] List<GameObject> PlantPrefabs;
     [SerializeField] Canvas PlayerUI;
     TMP_Text InteractText;
     TMP_Text SelectText;
